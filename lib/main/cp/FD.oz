@@ -198,7 +198,7 @@ export
 %    assign:         FdAssign
 %    distribute:     FdDistribute
 %    choose:         FdChoose
-     distribute:     Fdpdistribute
+     branch:     Fdpbranch
 
 define
 
@@ -467,7 +467,7 @@ define
    local
       Distributor = FDP.branch
    in
-      proc {Fdpdistribute IV1 Evar Eval}
+      proc {Fdpbranch IV1 Evar Eval}
 	 {Distributor IV1 FdIntVarBranch.Evar FdIntValBranch.Eval}
       end
    end
