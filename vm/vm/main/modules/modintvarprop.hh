@@ -442,7 +442,16 @@ namespace mozart {
 	}
       };
 
-
+      class Distribute: public Builtin<Distribute> {
+      public:
+	Distribute(): Builtin("distribute") {}
+	static void call(VM vm, In tec, In v) {
+	  assert(vm->getCurrentSpace()->hasConstraintSpace());
+	  //GecodeSpace& home = vm->getCurrentSpace()->getCstSpace(true);
+	  std::cout << "will choose a distributor" << std::endl; 
+	}
+      };
+      
       class Branch: public Builtin<Branch> {
       public:
 	Branch(): Builtin("branch") {}
