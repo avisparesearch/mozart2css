@@ -118,6 +118,10 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   int_values_min = atomTable.get(vm, "INT_VALUES_MIN");
   int_values_max = atomTable.get(vm, "INT_VALUES_MAX");
 
+	tt_fixp = atomTable.get(vm, "TT_FIXP");
+  tt_fixs = atomTable.get(vm, "TT_FIXS");
+  tt_fixe = atomTable.get(vm, "TT_FIXE");
+
 }
 
 }

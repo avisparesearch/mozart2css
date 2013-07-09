@@ -134,7 +134,11 @@ struct CoreAtoms {
   atom_t int_val_range_max;
   atom_t int_values_min;
   atom_t int_values_max;
-  
+
+	//TaskType
+  atom_t tt_fixp;
+  atom_t tt_fixs;
+  atom_t tt_fixe;  
 
 };
 

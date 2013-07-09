@@ -31,6 +31,27 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
   return Gecode::IRT_GR;
 }
   
+static bool isAtomToTaskType(VM vm, In r) {
+    atom_t a = getArgument<atom_t>(vm,r,("Atom"));
+    if (a == vm->coreatoms.tt_fixp or a == vm->coreatoms.tt_fixs or a == vm->coreatoms.tt_fixe){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+
+static Gecode::TaskType atomToTaskType(VM vm, In r) {
+  if(isAtomToTaskType(vm, r) == false){
+      raiseTypeError(vm,("InvalidTaskType"),r);
+  }
+  atom_t a = getArgument<atom_t>(vm,r,("Atom"));
+  if (a == vm->coreatoms.tt_fixp) return Gecode::TT_FIXP;
+  if (a == vm->coreatoms.tt_fixs) return Gecode::TT_FIXS;
+  if (a == vm->coreatoms.tt_fixe) return Gecode::TT_FIXE;
+  return Gecode::TT_FIXE;
+}
+
   //Uncomment this when we use it in a propagator builtin. 
   //Avoing compilation warning.
   /*static Gecode::IntConLevel atomToIntConLevel(VM vm, In l) {
@@ -279,7 +300,7 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
     }
     return Gecode::IntArgs(v);
   }
-
+  
   static bool isIntSet(VM vm, In x){
     bool v=true;
     if (x.is<Cons>()){
@@ -303,7 +324,7 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
 	}else{
 	  v=false;
 	}
-	  
+	
 	UnstableNode utail = Reference::build(vm, tail);
 	RichNode rtail = utail;
 	if (!rtail.is<Cons>()){
@@ -317,13 +338,13 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
     }
     return v;
   }
-
+  
   static Gecode::IntSet getIntSet(VM vm, In x){
-
+    
     if(!isIntSet(vm,x)){
       raiseTypeError(vm, ("Integer Arguments"), x);
     }
-
+    
     std::vector<int> v;
     if (x.is<Cons>()){
       StableNode* head=x.as<Cons>().getHead();
@@ -348,16 +369,16 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
 	      v.push_back((int)(val));
 	    }
 	  }
-	  UnstableNode utail = Reference::build(vm, tail);
-	  RichNode rtail = utail;
-	  if (!rtail.is<Cons>()){
-	    break;
-	  }	  
-	  UnstableNode ncons = Reference::build(vm, tail);
-	  RichNode rncons = ncons;
-	  head=rncons.as<Cons>().getHead();
-	  tail=rncons.as<Cons>().getTail();	
-	} 
+	UnstableNode utail = Reference::build(vm, tail);
+	RichNode rtail = utail;
+	if (!rtail.is<Cons>()){
+	  break;
+	}	  
+	UnstableNode ncons = Reference::build(vm, tail);
+	RichNode rncons = ncons;
+	head=rncons.as<Cons>().getHead();
+	tail=rncons.as<Cons>().getTail();	
+      } 
       int pairs[v.size()/2][2];
       unsigned int i=0;
       unsigned int ii=0;
@@ -369,17 +390,47 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
       }
       return Gecode::IntSet(pairs, v.size()/2);
     }
-          
+    
     return Gecode::IntSet();
   }
   
-  //Uncomment this when we use it in a propagator builtin. 
-  //Avoing compilation warning.
-  /*static Gecode::IntSetArgs getIntSetArgs(VM vm, In x){
+  static bool isIntSetArgs(VM vm, In x){
+    bool v =  true;
+    
+    assert(x.is<Cons>());
+    
+    if (x.is<Cons>()){
+      StableNode* head=x.as<Cons>().getHead();
+      StableNode* tail=x.as<Cons>().getTail();
+      while (true){
+    	UnstableNode uhead = Reference::build(vm, head);
+    	RichNode rhead = uhead;
+    	if(rhead.is<Cons>()){
+    	  assert(rhead.is<Cons>());
+	  v = true;
+	} 
+    	UnstableNode utail = Reference::build(vm, tail);
+    	RichNode rtail = utail;
+    	if (!rtail.is<Cons>()){
+    	  break;
+    	}	  
+    	UnstableNode ncons = Reference::build(vm, tail);
+    	RichNode rncons = ncons;
+    	head=rncons.as<Cons>().getHead();
+    	tail=rncons.as<Cons>().getTail();	
+      }
+    }
+    else{
+      v =  false;
+    }
+    return v;
+  }
+  
+  static Gecode::IntSetArgs getIntSetArgs(VM vm, In x){
     Gecode::IntSetArgs v;
     
     assert(x.is<Cons>());
-
+    
     if (x.is<Cons>()){
       StableNode* head=x.as<Cons>().getHead();
       StableNode* tail=x.as<Cons>().getTail();
@@ -404,17 +455,174 @@ static Gecode::IntRelType atomToRelType(VM vm, In r) {
       return v;
     }
     return v;
-    }*/
-
+  }
+  
+  static bool isIntSharedArray(VM vm,In x){
+    if(!isIntArgs(vm,x)){
+      return false;
+    }
+    else{
+      return true;
+    }
+  }
+  
+  
   static Gecode::IntSharedArray getIntSharedArray(VM vm,In x){
+    
+    if(!isIntSharedArray(vm,x)){
+      raiseTypeError(vm, ("Finite Domain Integer Arguments"), x);
+    }
+    
     if(x.is<Cons>()){
       return Gecode::IntSharedArray(getIntArgs(vm,x));
     }
     return Gecode::IntSharedArray();
   }
-
+  
+  
+  static bool isBoolVarArgs(VM vm, In x){
+    bool v=true;
+    size_t width;
+    
+    if(x.is<Tuple>()){
+      width = x.as<Tuple>().getWidth();
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Tuple>().getElement(i);
+	UnstableNode a = Reference::build(vm, t);
+	RichNode tt = a;
+	v = BoolVarLike(tt).isBoolVarLike(vm);
+      }
+    }else if(x.is<Cons>()){
+      StableNode* head=x.as<Cons>().getHead();
+      StableNode* tail=x.as<Cons>().getTail();
+      while (true){
+      	UnstableNode uhead = Reference::build(vm, head);
+      	RichNode rhead = uhead;
+	v = BoolVarLike(rhead).isBoolVarLike(vm);
+	UnstableNode utail = Reference::build(vm, tail);
+      	RichNode rtail = utail;
+	if (!rtail.is<Cons>()){
+	  break;
+	}
+      	UnstableNode ncons = Reference::build(vm, tail);
+      	RichNode rncons = ncons;
+      	head=rncons.as<Cons>().getHead();
+	tail=rncons.as<Cons>().getTail();	
+      }
+    }else if(x.is<Record>()){
+      width = x.as<Record>().getWidth();
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Record>().getElement(i);
+      	UnstableNode a = Reference::build(vm, t);
+      	RichNode tt = a;
+	v = BoolVarLike(tt).isBoolVarLike(vm);
+      }
+    }else{
+      v=false;
+    }
+    return v;
+  }
+  
+  static Gecode::BoolVarArgs getBoolVarArgs(VM vm, In x){
+    size_t width;
+    
+    if(!isBoolVarArgs(vm,x)){
+      raiseTypeError(vm, ("Boolean Arguments"), x);
+    }
+    
+    if(x.is<Tuple>()){
+      width = x.as<Tuple>().getWidth();
+      Gecode::BoolVarArgs v(width);
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Tuple>().getElement(i);
+	UnstableNode a = Reference::build(vm, t);
+	RichNode tt = a;
+	v[i] = BoolVarLike(tt).boolVar(vm);
+      }
+      return v;
+    }else if(x.is<Cons>()){
+      Gecode::BoolVarArgs v;
+      StableNode* head=x.as<Cons>().getHead();
+      StableNode* tail=x.as<Cons>().getTail();
+      while (true){
+      	UnstableNode uhead = Reference::build(vm, head);
+      	RichNode rhead = uhead;
+      	v << BoolVarLike(rhead).boolVar(vm);
+	UnstableNode utail = Reference::build(vm, tail);
+      	RichNode rtail = utail;
+	if (!rtail.is<Cons>()){
+	  break;
+	}
+      	UnstableNode ncons = Reference::build(vm, tail);
+      	RichNode rncons = ncons;
+      	head=rncons.as<Cons>().getHead();
+	tail=rncons.as<Cons>().getTail();	
+      }
+      return v;
+    }else {
+      width = x.as<Record>().getWidth();
+      Gecode::BoolVarArgs v(width);
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Record>().getElement(i);
+      	UnstableNode a = Reference::build(vm, t);
+      	RichNode tt = a;
+      	v[i] = BoolVarLike(tt).boolVar(vm);
+      }
+      return v;
+    }
+  }
+  
+  static Gecode::TaskTypeArgs getTaskTypeArgs(VM vm, In x){
+    size_t width;
+    
+    //if(!isTasktypeArgs(vm,x)){ //This function is not implemented yet.
+    // raiseTypeError(vm, MOZART_STR("Finite Domain Integer Arguments"), x);
+    // }
+    
+    if(x.is<Tuple>()){
+      width = x.as<Tuple>().getWidth();
+      Gecode::TaskTypeArgs v(width);
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Tuple>().getElement(i);
+	UnstableNode a = Reference::build(vm, t);
+	RichNode tt = a;
+	v[i] = atomToTaskType(vm,tt);
+      }
+      return v;
+    }else if(x.is<Cons>()){
+      Gecode::TaskTypeArgs v;
+      StableNode* head=x.as<Cons>().getHead();
+      StableNode* tail=x.as<Cons>().getTail();
+      while (true){
+      	UnstableNode uhead = Reference::build(vm, head);
+      	RichNode rhead = uhead;
+      	v << atomToTaskType(vm,rhead);
+	UnstableNode utail = Reference::build(vm, tail);
+      	RichNode rtail = utail;
+	if (!rtail.is<Cons>()){
+	  break;
+	}
+      	UnstableNode ncons = Reference::build(vm, tail);
+      	RichNode rncons = ncons;
+      	head=rncons.as<Cons>().getHead();
+	tail=rncons.as<Cons>().getTail();	
+      }
+      return v;
+    }else {
+      width = x.as<Record>().getWidth();
+      Gecode::TaskTypeArgs v(width);
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Record>().getElement(i);
+      	UnstableNode a = Reference::build(vm, t);
+      	RichNode tt = a;
+      	v[i] = atomToTaskType(vm,tt);
+      }
+      return v;
+    }
+  }
+  
 }
-
+  
 }
 
 #endif
