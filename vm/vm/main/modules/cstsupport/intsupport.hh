@@ -572,12 +572,57 @@ static Gecode::TaskType atomToTaskType(VM vm, In r) {
     }
   }
   
+  static bool isTaskTypeArgs(VM vm, In x){
+    size_t width;
+    bool v=true;
+
+    if(x.is<Tuple>()){
+      width = x.as<Tuple>().getWidth();
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Tuple>().getElement(i);
+	UnstableNode a = Reference::build(vm, t);
+	RichNode tt = a;
+	v = isAtomToTaskType(vm,tt);
+      }
+      return v;
+    }else if(x.is<Cons>()){
+      StableNode* head=x.as<Cons>().getHead();
+      StableNode* tail=x.as<Cons>().getTail();
+      while (true){
+      	UnstableNode uhead = Reference::build(vm, head);
+      	RichNode rhead = uhead;
+      	v = isAtomToTaskType(vm,rhead);
+	UnstableNode utail = Reference::build(vm, tail);
+      	RichNode rtail = utail;
+	if (!rtail.is<Cons>()){
+	  break;
+	}
+      	UnstableNode ncons = Reference::build(vm, tail);
+      	RichNode rncons = ncons;
+      	head=rncons.as<Cons>().getHead();
+	tail=rncons.as<Cons>().getTail();	
+      }
+      return v;
+    }else if(x.is<Record>()){
+      width = x.as<Record>().getWidth();
+      for(unsigned int i=0; i<width; i++){
+      	StableNode* t=x.as<Record>().getElement(i);
+      	UnstableNode a = Reference::build(vm, t);
+      	RichNode tt = a;
+      	v = isAtomToTaskType(vm,tt);
+      }
+    }else{
+      v=false;
+    }
+    return v;      
+  }
+  
   static Gecode::TaskTypeArgs getTaskTypeArgs(VM vm, In x){
     size_t width;
     
-    //if(!isTasktypeArgs(vm,x)){ //This function is not implemented yet.
-    // raiseTypeError(vm, MOZART_STR("Finite Domain Integer Arguments"), x);
-    // }
+    if(!isTaskTypeArgs(vm,x)){
+      raiseTypeError(vm,("TaskType Arguments"), x);
+    }
     
     if(x.is<Tuple>()){
       width = x.as<Tuple>().getWidth();

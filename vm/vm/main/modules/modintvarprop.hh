@@ -875,6 +875,70 @@ namespace mozart {
       	  }
       	}
       };
+      
+      class Nooverlap4: public Builtin<Nooverlap4>{
+      public:
+	Nooverlap4(): Builtin("nooverlap4"){}
+
+	static void call(VM vm, In x, In w, In y, In h){
+	  assert(vm->getCurrentSpace()->hasConstraintSpace());
+      	  GecodeSpace& home = vm->getCurrentSpace()->getCstSpace();
+	  if (isIntVarArgs(vm,x) and isIntArgs(vm,w) and isIntVarArgs(vm,y) and isIntArgs(vm,h)){
+	    Gecode::nooverlap(home,getIntVarArgs(vm,x),getIntArgs(vm,w),getIntVarArgs(vm,y),getIntArgs(vm,h));
+	  }
+	  else{
+	    raiseTypeError(vm,("Propagator posting nooverlap malformed"), x);
+	  }
+	}
+      };
+
+      class Nooverlap5: public Builtin<Nooverlap5>{
+      public:
+	Nooverlap5(): Builtin("nooverlap5"){}
+
+	static void call(VM vm, In x, In w, In y, In h, In o){
+	  assert(vm->getCurrentSpace()->hasConstraintSpace());
+      	  GecodeSpace& home = vm->getCurrentSpace()->getCstSpace();
+	  if (isIntVarArgs(vm,x) and isIntArgs(vm,w) and isIntVarArgs(vm,y) and isIntArgs(vm,h) and isBoolVarArgs(vm,o)){
+	    Gecode::nooverlap(home,getIntVarArgs(vm,x),getIntArgs(vm,w),getIntVarArgs(vm,y),getIntArgs(vm,h),getBoolVarArgs(vm,o));
+	  }
+	  else{
+	    raiseTypeError(vm,("Propagator posting nooverlap malformed"), x);
+	  }
+	}
+      };
+
+      class Nooverlap6: public Builtin<Nooverlap6>{
+      public:
+	Nooverlap6(): Builtin("nooverlap6"){}
+
+	static void call(VM vm, In x0, In w, In x1, In y0, In h, In y1){
+	  assert(vm->getCurrentSpace()->hasConstraintSpace());
+      	  GecodeSpace& home = vm->getCurrentSpace()->getCstSpace();
+	  if (isIntVarArgs(vm,x0) and isIntVarArgs(vm,w) and isIntVarArgs(vm,x1) and isIntArgs(vm,y0) and isIntVarArgs(vm,h) and isIntVarArgs(vm,y1)){
+	    Gecode::nooverlap(home,getIntVarArgs(vm,x0),getIntVarArgs(vm,w),getIntVarArgs(vm,x1),getIntVarArgs(vm,y0),getIntVarArgs(vm,h),getIntVarArgs(vm,y1));
+	  }
+	  else{
+	    raiseTypeError(vm,("Propagator posting nooverlap malformed"), x0);
+	  }
+	}
+      };
+
+      class Nooverlap7: public Builtin<Nooverlap7>{
+      public:
+	Nooverlap7(): Builtin("nooverlap7"){}
+
+	static void call(VM vm, In x0, In w, In x1, In y0, In h, In y1, In o){
+	  assert(vm->getCurrentSpace()->hasConstraintSpace());
+      	  GecodeSpace& home = vm->getCurrentSpace()->getCstSpace();
+	  if (isIntVarArgs(vm,x0) and isIntVarArgs(vm,w) and isIntVarArgs(vm,x1) and isIntArgs(vm,y0) and isIntVarArgs(vm,h) and isIntVarArgs(vm,y1) and isBoolVarArgs(vm,o)){
+	    Gecode::nooverlap(home,getIntVarArgs(vm,x0),getIntVarArgs(vm,w),getIntVarArgs(vm,x1),getIntVarArgs(vm,y0),getIntVarArgs(vm,h),getIntVarArgs(vm,y1),getBoolVarArgs(vm,o));
+	  }
+	  else{
+	    raiseTypeError(vm,("Propagator posting nooverlap malformed"), x0);
+	  }
+	}
+      };
 
     }; // class ModIntVarProp
   } // namespace builtins
